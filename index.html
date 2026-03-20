@@ -12,7 +12,6 @@
             background-color: #f8fafc; 
             min-height: 100vh; 
             color: #1e293b;
-            /* ป้องกันการเลื่อนซ้ายขวาบนมือถือ */
             overflow-x: hidden;
         }
         .text-orange-main { color: #ff6600; }
@@ -23,7 +22,6 @@
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ปรับปรุงขนาดช่อง OTP ให้ยืดหยุ่นตามหน้าจอโทรศัพท์ */
         .otp-box {
             flex: 1;
             max-width: 45px;
@@ -35,7 +33,7 @@
             border-radius: 12px;
             background: #ffffff;
             transition: all 0.2s;
-            min-width: 0; /* ป้องกันการดันขอบบนมือถือจอเล็ก */
+            min-width: 0; 
         }
         @media (min-width: 640px) {
             .otp-box { height: 60px; font-size: 24px; }
@@ -49,65 +47,55 @@
         .btn-action:hover { transform: translateY(-1px); box-shadow: 0 6px 15px -4px rgba(255, 102, 0, 0.3); }
         .btn-action:active { transform: translateY(0); scale: 0.98; }
 
-        /* Custom Scrollbar สำหรับตารางบนมือถือ */
         .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        
-        /* ตกแต่งตารางบนมือถือ */
-        @media (max-width: 640px) {
-            .table-mobile-font { font-size: 11px; }
-        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center p-4 sm:p-6">
 
-    <!-- หน้าจอโหลดระบบ -->
+    <!-- System Loading Screen -->
     <div id="sessionLoading" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
         <div class="w-10 h-10 border-4 border-slate-100 border-t-orange-500 rounded-full animate-spin mb-3"></div>
         <p class="text-slate-400 text-xs font-medium tracking-widest uppercase">MORANASATECT</p>
     </div>
 
-    <!-- ขั้นตอนที่ 1: เข้าสู่ระบบ -->
-    <div id="step1" class="hidden w-full max-w-[400px] fade-in py-4 sm:py-8">
-        <div class="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] card-shadow border border-slate-100 text-center">
-            <div class="w-14 h-14 sm:w-20 sm:h-20 bg-orange-50 rounded-2xl sm:rounded-[2rem] flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-10 sm:w-10 text-orange-main" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <!-- Step 1: Login -->
+    <div id="step1" class="hidden w-full max-w-[380px] fade-in py-4 sm:py-8">
+        <div class="bg-white p-6 sm:p-8 rounded-[2rem] card-shadow border border-slate-100 text-center">
+            <div class="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-main" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
             </div>
-            <h1 class="text-xl sm:text-2xl font-bold tracking-tight uppercase text-slate-800">MORANASATECT</h1>
-            <p class="text-slate-400 text-[11px] sm:text-xs mt-1 font-medium italic">Student Photo Access Portal</p>
+            <h1 class="text-2xl font-bold tracking-tight uppercase text-slate-800">MORANASATECT</h1>
+            <p class="text-slate-400 text-[11px] mt-1 font-medium">เข้าสู่ระบบเพื่อรับรูปถ่าย</p>
 
-            <div class="mt-6 sm:mt-8 space-y-4">
+            <div class="mt-8 space-y-4">
                 <input type="tel" id="studentIdInput" maxlength="10" placeholder="รหัสนักศึกษา" 
-                    class="w-full px-5 py-3.5 sm:py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:bg-white focus:border-orange-200 outline-none transition-all text-center text-lg sm:text-xl font-bold tracking-widest text-slate-700">
-                
-                <div id="error1" class="hidden text-red-500 text-[10px] sm:text-[11px] font-bold bg-red-50 py-2.5 rounded-xl border border-red-100">ไม่พบรหัสนี้ในระบบ</div>
-                
+                    class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:bg-white focus:border-orange-200 outline-none transition-all text-center text-xl font-bold tracking-widest text-slate-700">
+                <div id="error1" class="hidden text-red-500 text-[10px] font-bold bg-red-50 py-2.5 rounded-xl border border-red-100 uppercase tracking-tighter">ไม่พบรหัสนี้ในระบบ</div>
                 <button id="loginBtn" onclick="handleLogin()" 
-                    class="btn-action w-full text-white text-sm sm:text-base font-bold py-4 rounded-2xl flex items-center justify-center space-x-2">
+                    class="btn-action w-full text-white text-sm font-bold py-4 rounded-2xl flex items-center justify-center space-x-2 shadow-lg shadow-orange-100">
                     <span>ขอรหัสยืนยัน OTP</span>
                     <div id="loginLoading" class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 </button>
             </div>
         </div>
-        <p class="text-center mt-6 sm:mt-8 text-slate-300 text-[8px] sm:text-[9px] uppercase tracking-[0.3em] font-bold">MORANASATECT System</p>
     </div>
 
-    <!-- ขั้นตอนที่ 2: ยืนยัน OTP -->
-    <div id="step2" class="hidden w-full max-w-[400px] fade-in py-4 sm:py-8">
-        <div class="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] card-shadow border border-slate-100 text-center">
-            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-600 rounded-full text-[9px] sm:text-[10px] font-bold mb-5 sm:mb-6 uppercase tracking-wider border border-green-100">
+    <!-- Step 2: OTP Verification -->
+    <div id="step2" class="hidden w-full max-w-[380px] fade-in py-4 sm:py-8">
+        <div class="bg-white p-6 sm:p-8 rounded-[2rem] card-shadow border border-slate-100 text-center">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-600 rounded-full text-[9px] font-bold mb-6 uppercase tracking-wider border border-green-100">
                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                 OTP Sent Successfully
             </div>
-            <h1 class="text-xl sm:text-2xl font-black mb-1 text-slate-800 uppercase">ยืนยันตัวตน</h1>
-            <p class="text-slate-500 text-[10px] sm:text-[11px] font-medium" id="targetEmail"></p>
-            <p class="text-[9px] sm:text-[10px] text-slate-400 mb-6 sm:mb-8 font-bold uppercase tracking-widest">REF: <span class="text-orange-main" id="displayRef"></span></p>
+            <h1 class="text-xl font-black mb-1 text-slate-800 uppercase leading-none">ยืนยันตัวตน</h1>
+            <p class="text-slate-500 text-[10px] font-medium" id="targetEmail"></p>
+            <p class="text-[9px] text-slate-400 mb-6 font-bold uppercase tracking-widest mt-1">REF: <span class="text-orange-main" id="displayRef"></span></p>
 
             <div class="space-y-6">
-                <!-- ช่องกรอก OTP ที่ปรับขนาดตามมือถือ -->
-                <div class="flex justify-between gap-1.5 sm:gap-2" id="otpGroup">
+                <div class="flex justify-between gap-2" id="otpGroup">
                     <input type="tel" maxlength="1" class="otp-box" data-idx="0" inputmode="numeric">
                     <input type="tel" maxlength="1" class="otp-box" data-idx="1" inputmode="numeric">
                     <input type="tel" maxlength="1" class="otp-box" data-idx="2" inputmode="numeric">
@@ -115,69 +103,65 @@
                     <input type="tel" maxlength="1" class="otp-box" data-idx="4" inputmode="numeric">
                     <input type="tel" maxlength="1" class="otp-box" data-idx="5" inputmode="numeric">
                 </div>
-                
-                <div id="error2" class="hidden text-red-500 text-[10px] sm:text-[11px] font-bold bg-red-50 py-2.5 rounded-xl border border-red-100">รหัสยืนยันไม่ถูกต้อง</div>
-                
-                <button onclick="handleVerify()" class="bg-slate-900 text-white text-xs sm:text-sm font-bold py-4 rounded-2xl w-full shadow-lg hover:bg-black transition-all">ตรวจสอบและยืนยัน</button>
-                
-                <button onclick="showStep(1)" class="text-slate-400 text-[9px] sm:text-[10px] hover:text-orange-main transition font-bold uppercase tracking-widest">ย้อนกลับ</button>
+                <div id="error2" class="hidden text-red-500 text-[10px] font-bold bg-red-50 py-2.5 rounded-xl border border-red-100">รหัสยืนยันไม่ถูกต้อง</div>
+                <button onclick="handleVerify()" class="bg-slate-900 text-white text-xs font-bold py-4 rounded-2xl w-full shadow-lg hover:bg-black transition-all">ตรวจสอบและยืนยัน</button>
+                <button onclick="showStep(1)" class="text-slate-400 text-[9px] hover:text-orange-main transition font-bold uppercase tracking-widest">ย้อนกลับ</button>
             </div>
         </div>
     </div>
 
-    <!-- ขั้นตอนที่ 3: แดชบอร์ดข้อมูล -->
+    <!-- Step 3: Dashboard -->
     <div id="step3" class="hidden w-full max-w-5xl fade-in py-2 sm:py-4">
-        <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 items-start">
+        <div class="flex flex-col lg:flex-row gap-5 items-start">
             
-            <!-- แผงข้อมูลด้านข้าง (มือถือจะอยู่ด้านบน) -->
+            <!-- Sidebar -->
             <div class="w-full lg:w-72 xl:w-80 space-y-4">
-                <div class="bg-white p-5 sm:p-6 rounded-[1.5rem] card-shadow border border-slate-100 overflow-hidden relative">
-                    <div class="absolute -top-2 -right-2 p-4 opacity-5 text-orange-main">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                    </div>
-                    <p class="text-[8px] sm:text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-2">MORANASATECT Member</p>
-                    <h2 class="text-lg sm:text-xl font-black text-slate-800 leading-tight" id="resName"></h2>
-                    <p class="text-orange-main font-bold text-[10px] sm:text-xs mt-1 tracking-wider opacity-80" id="resId"></p>
+                <div class="bg-white p-5 rounded-[1.5rem] card-shadow border border-slate-100 relative">
+                    <p class="text-[8px] text-slate-400 uppercase tracking-widest font-bold mb-2">Authenticated Member</p>
+                    <h2 class="text-xl font-black text-slate-800 leading-tight" id="resName"></h2>
+                    <p class="text-orange-main font-bold text-[10px] mt-1 tracking-wider opacity-80" id="resId"></p>
                 </div>
 
                 <div class="space-y-3">
-                    <!-- ลิงก์รูปภาพหมู่ (สาธารณะ) -->
+                    <!-- Global Link (Public) -->
                     <a href="https://drive.google.com/drive/folders/1jpIr70v2KsbOEidIYA8lfH_iwmJgXqWG?usp=drive_link" target="_blank" 
-                        class="flex items-center justify-between p-4 bg-slate-900 rounded-2xl sm:rounded-[1.5rem] text-white shadow-lg hover:bg-black transition-all group active:scale-[0.99]">
-                        <div class="flex items-center gap-3 sm:gap-4 text-left">
-                            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 rounded-xl flex items-center justify-center text-orange-400">
+                        class="flex items-center justify-between p-4 bg-slate-900 rounded-[1.5rem] text-white shadow-lg hover:bg-black transition-all group active:scale-[0.99]">
+                        <div class="flex items-center gap-4 text-left">
+                            <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-orange-400 group-hover:text-white transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                             </div>
                             <div>
-                                <p class="text-[7px] sm:text-[8px] text-white/40 font-bold uppercase tracking-widest">Public</p>
-                                <p class="text-xs sm:text-sm font-bold leading-none">รูปภาพหมู่ภาพรวม</p>
+                                <p class="text-[8px] text-white/40 font-bold uppercase tracking-[0.2em] leading-none mb-1">Public Access</p>
+                                <p class="text-sm font-extrabold leading-tight">ดาวน์โหลดรูปภาพหมู่</p>
                             </div>
                         </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white/40 group-hover:text-white transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                     </a>
-                    <!-- ปุ่มลิงก์ส่วนตัวจะมาแสดงที่นี่ -->
+                    
+                    <!-- Personal Links injected here -->
                     <div id="driveLinksContainer" class="space-y-3"></div>
                 </div>
                 
-                <button onclick="handleLogout()" class="w-full py-3 text-[8px] sm:text-[9px] text-slate-400 hover:text-red-500 transition font-black uppercase tracking-[0.2em]">Logout Session</button>
+                <button onclick="handleLogout()" class="w-full py-4 text-[9px] text-slate-400 hover:text-red-500 transition font-black uppercase tracking-[0.2em]">Logout Session</button>
             </div>
 
-            <!-- ส่วนตารางประวัติ (มือถือจะอยู่ด้านล่าง) -->
-            <div class="flex-1 w-full bg-white rounded-2xl sm:rounded-[1.5rem] card-shadow border border-slate-100 overflow-hidden">
-                <div class="p-4 sm:p-5 border-b border-slate-50 bg-white flex justify-between items-center">
-                    <h3 class="font-black text-slate-800 tracking-tight text-[10px] sm:text-xs uppercase">Service History</h3>
-                    <div class="px-2.5 py-1 bg-orange-50 text-orange-600 rounded-full text-[8px] sm:text-[9px] font-bold border border-orange-100">LIVE</div>
+            <!-- Service History Table -->
+            <div class="flex-1 w-full bg-white rounded-[1.5rem] card-shadow border border-slate-100 overflow-hidden">
+                <div class="p-4 border-b border-slate-50 bg-white flex justify-between items-center">
+                    <h3 class="font-black text-slate-800 tracking-tight text-[10px] uppercase">Service History</h3>
+                    <div class="px-2 py-0.5 bg-orange-50 text-orange-600 rounded-full text-[8px] font-bold border border-orange-100">LIVE</div>
                 </div>
                 <div class="overflow-x-auto custom-scrollbar">
                     <table class="w-full text-left whitespace-nowrap">
                         <thead>
-                            <tr class="text-[8px] sm:text-[9px] text-slate-400 uppercase tracking-[0.1em] border-b border-slate-50 bg-slate-50/20">
-                                <th class="px-4 sm:px-6 py-3 sm:py-4">Queue</th>
-                                <th class="px-4 sm:px-6 py-3 sm:py-4 text-center">Status</th>
-                                <th class="px-4 sm:px-6 py-3 sm:py-4">Time</th>
-                                <th class="px-4 sm:px-6 py-3 sm:py-4 text-right">Process</th>
+                            <tr class="text-[8px] text-slate-400 uppercase tracking-[0.1em] border-b border-slate-50 bg-slate-50/20">
+                                <th class="px-5 py-3.5">Queue</th>
+                                <th class="px-5 py-3.5 text-center">Status</th>
+                                <th class="px-5 py-3.5">Booked</th>
+                                <th class="px-5 py-3.5 text-right">Process</th>
                             </tr>
                         </thead>
-                        <tbody id="resultBody" class="table-mobile-font sm:text-[12px] text-slate-600 divide-y divide-slate-50 font-medium"></tbody>
+                        <tbody id="resultBody" class="text-[11px] text-slate-600 divide-y divide-slate-50 font-medium"></tbody>
                     </table>
                 </div>
             </div>
@@ -185,10 +169,8 @@
     </div>
 
     <script>
-        // ตั้งค่า GAS URL ของคุณ
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwiwh09ssDzXk_XBA_UtVq-JqsaZt6rEGh3sCmfLaHCB_GZTy0umsf9vribur54EpaW/exec"; 
 
-        // ข้อมูลชุดสมบูรณ์ที่ให้มา
         const database = [
             { q: "T-001", id: "64030135", name: "Nan", status: "เสร็จสิ้น", booked: "20/3/2569 13:29", drive: "https://drive.google.com/drive/folders/1oAdrdy8fsNMH0ZB_ijZhizVkWqt207g0", duration: "429" },
             { q: "T-002", id: "64030163", name: "เม", status: "เสร็จสิ้น", booked: "20/3/2569 13:29", drive: "https://drive.google.com/drive/folders/1jBTLfeuL5Ns_TxtUsQOdHSSFG90-Cp2A", duration: "295" },
@@ -253,22 +235,17 @@
         let currentUserResults = [];
 
         window.onload = function() {
-            // ตรวจสอบ Session เดิม
             const savedId = localStorage.getItem('moranasatect_session');
             if (savedId) {
                 currentUserResults = database.filter(item => item.id === savedId);
                 if (currentUserResults.length > 0) { renderDashboard(); showStep(3); } else { showStep(1); }
             } else { showStep(1); }
-            
-            // ปิดหน้าจอโหลด
-            setTimeout(() => document.getElementById('sessionLoading').classList.add('hidden'), 600);
-            
+            setTimeout(() => document.getElementById('sessionLoading').classList.add('hidden'), 500);
             setupOtpInputs();
             setupEnterKeys();
         };
 
         function setupEnterKeys() {
-            // ดักจับการกด Enter ในหน้าแรก
             document.getElementById('studentIdInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') handleLogin();
             });
@@ -284,7 +261,7 @@
                 };
                 box.onkeydown = (e) => { 
                     if (e.key === 'Backspace' && !box.value && i > 0) boxes[i-1].focus();
-                    if (e.key === 'Enter') handleVerify(); // กด Enter เพื่อยืนยัน OTP
+                    if (e.key === 'Enter') handleVerify();
                 };
             });
         }
@@ -301,7 +278,6 @@
         async function handleLogin() {
             const id = document.getElementById('studentIdInput').value.trim();
             currentUserResults = database.filter(item => item.id === id);
-            
             if (currentUserResults.length === 0) { 
                 document.getElementById('error1').classList.remove('hidden'); 
                 shakeElement(document.getElementById('step1'));
@@ -327,11 +303,8 @@
                 document.getElementById('displayRef').innerText = currentRef;
                 showStep(2);
                 setTimeout(() => document.querySelectorAll('.otp-box')[0].focus(), 400);
-            } catch (e) { 
-                alert("เกิดข้อผิดพลาดในการเชื่อมต่อระบบอีเมล"); 
-            } finally { 
-                btn.disabled = false; load.classList.add('hidden'); 
-            }
+            } catch (e) { alert("Email system connection failed"); }
+            finally { btn.disabled = false; load.classList.add('hidden'); }
         }
 
         function handleVerify() {
@@ -365,13 +338,13 @@
                     a.href = item.drive; a.target = "_blank";
                     a.className = "btn-action flex items-center justify-between p-4 bg-orange-main rounded-2xl text-white shadow-md transition-all group active:scale-95 mb-3";
                     a.innerHTML = `
-                        <div class="flex items-center gap-3 sm:gap-4">
-                            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-xl flex items-center justify-center text-white backdrop-blur-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <div class="flex items-center gap-4 text-left">
+                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white backdrop-blur-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                             </div>
-                            <div class="text-left">
-                                <p class="text-[8px] sm:text-[9px] text-white/60 font-bold uppercase tracking-widest leading-none mb-1">Personal Access</p>
-                                <p class="text-sm sm:text-base font-extrabold leading-tight">ดาวน์โหลดรูปคิว ${item.q}</p>
+                            <div>
+                                <p class="text-[8px] sm:text-[9px] text-white/60 font-bold uppercase tracking-[0.2em] leading-none mb-1">Personal Access</p>
+                                <p class="text-sm sm:text-base font-extrabold leading-tight tracking-tight">ดาวน์โหลดรูปถ่ายคิว ${item.q}</p>
                             </div>
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-white/50 group-hover:text-white transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
@@ -386,14 +359,14 @@
                 const tr = document.createElement('tr');
                 const isCancelled = item.status === 'ยกเลิก';
                 tr.innerHTML = `
-                    <td class="px-4 sm:px-6 py-4 font-bold text-slate-800">${item.q}</td>
-                    <td class="px-4 sm:px-6 py-4 text-center">
-                        <span class="px-2.5 py-1 rounded-full text-[8px] sm:text-[9px] font-black uppercase ${isCancelled ? 'bg-red-50 text-red-500 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}">
+                    <td class="px-5 py-4 font-bold text-slate-800">${item.q}</td>
+                    <td class="px-5 py-4 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-[8px] font-black uppercase ${isCancelled ? 'bg-red-50 text-red-500 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}">
                             ${item.status}
                         </span>
                     </td>
-                    <td class="px-4 sm:px-6 py-4 text-[10px] sm:text-[11px] text-slate-400">${item.booked.split(' ')[1]}</td>
-                    <td class="px-4 sm:px-6 py-4 text-right font-mono font-bold text-orange-main">${item.duration}${item.duration !== '-' ? 's' : ''}</td>
+                    <td class="px-5 py-4 text-[10px] text-slate-400 font-medium">${item.booked.split(' ')[1]}</td>
+                    <td class="px-5 py-4 text-right font-mono font-bold text-orange-main">${item.duration}${item.duration !== '-' ? 's' : ''}</td>
                 `;
                 tbody.appendChild(tr);
             });
