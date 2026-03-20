@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MORANASATECT | ระบบรับรูปถ่าย</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; min-height: 100vh; color: #1e293b; }
+        .text-orange-main { color: #ff6600; }
+        .bg-orange-main { background-color: #ff6600; }
+        .bg-orange-hover { background-color: #ea580c; }
+        .card-shadow { box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* OTP Boxes */
+        .otp-box {
+            width: 45px; height: 60px; text-align: center; font-size: 28px; font-weight: 800;
+            border: 2px solid #e2e8f0; border-radius: 16px; background: #ffffff; transition: all 0.2s;
+        }
+        .otp-box:focus { border-color: #ff6600; outline: none; box-shadow: 0 0 0 4px rgba(255, 102, 0, 0.1); }
+        
+        .btn-action {
+            background: linear-gradient(135deg, #ff6600 0%, #ff8c33 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(255, 102, 0, 0.4); }
+        .btn-action:active { transform: translateY(0); scale: 0.98; }
+
+        .custom-scrollbar::-webkit-scrollbar { height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4">
+
+    <!-- Loading Animation -->
+    <div id="sessionLoading" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
+        <div class="w-12 h-12 border-4 border-slate-100 border-t-orange-500 rounded-full animate-spin mb-4"></div>
+        <p class="text-slate-400 text-sm font-medium tracking-widest uppercase">MORANASATECT</p>
+    </div>
+
+    <!-- Step 1: Login -->
+    <div id="step1" class="hidden w-full max-w-md fade-in py-10">
+        <div class="bg-white p-10 rounded-[3rem] card-shadow border border-slate-100">
+            <div class="text-center mb-10">
+                <div class="w-20 h-20 bg-orange-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-orange-main" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-extrabold tracking-tight uppercase text-slate-800">MORANASATECT</h1>
+                <p class="text-slate-400 text-sm mt-2 font-medium">เข้าสู่ระบบเพื่อรับรูปถ่ายของคุณ</p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="relative">
+                    <input type="tel" id="studentIdInput" maxlength="10" placeholder="รหัสนักศึกษา" 
+                        class="w-full px-6 py-5 rounded-3xl bg-slate-50 border-2 border-transparent focus:bg-white focus:border-orange-200 outline-none transition-all text-center text-2xl font-bold tracking-widest text-slate-700">
+                </div>
+                <div id="error1" class="hidden text-red-500 text-xs text-center font-bold bg-red-50 py-3 rounded-2xl border border-red-100">ไม่พบรหัสนี้ในระบบ</div>
+                <button id="loginBtn" onclick="handleLogin()" 
+                    class="btn-action w-full text-white font-bold py-5 rounded-3xl flex items-center justify-center space-x-3">
+                    <span>ขอรหัสยืนยัน OTP</span>
+                    <div id="loginLoading" class="hidden w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                </button>
+            </div>
+        </div>
+        <p class="text-center mt-10 text-slate-300 text-[10px] uppercase tracking-[0.3em] font-bold">MORANASATECT Digital Distribution</p>
+    </div>
+
+    <!-- Step 2: OTP Verification -->
+    <div id="step2" class="hidden w-full max-w-md fade-in py-10">
+        <div class="bg-white p-10 rounded-[3rem] card-shadow border border-slate-100 text-center">
+            <div class="inline-flex items-center gap-2 px-5 py-2 bg-green-50 text-green-600 rounded-full text-xs font-bold mb-8 uppercase tracking-wider border border-green-100">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
+                OTP Sent Successfully
+            </div>
+            <h1 class="text-2xl font-black mb-2 text-slate-800 uppercase">ยืนยันตัวตน</h1>
+            <p class="text-slate-500 text-sm font-medium mb-1" id="targetEmail"></p>
+            <p class="text-xs text-slate-400 mb-10 font-bold">REF ID: <span class="text-orange-main" id="displayRef"></span></p>
+
+            <div class="space-y-10">
+                <div class="flex justify-between gap-2" id="otpGroup">
+                    <input type="tel" maxlength="1" class="otp-box" data-idx="0" inputmode="numeric">
+                    <input type="tel" maxlength="1" class="otp-box" data-idx="1" inputmode="numeric">
+                    <input type="tel" maxlength="1" class="otp-box" data-idx="2" inputmode="numeric">
+                    <input type="tel" maxlength="1" class="otp-box" data-idx="3" inputmode="numeric">
+                    <input type="tel" maxlength="1" class="otp-box" data-idx="4" inputmode="numeric">
+                    <input type="tel" maxlength="1" class="otp-box" data-idx="5" inputmode="numeric">
+                </div>
+                <div id="error2" class="hidden text-red-500 text-xs font-bold bg-red-50 py-3 rounded-2xl border border-red-100">รหัสยืนยันไม่ถูกต้อง</div>
+                <button onclick="handleVerify()" class="bg-slate-900 text-white font-bold py-5 rounded-3xl w-full shadow-2xl hover:bg-black transition-all active:scale-95">ตรวจสอบและยืนยัน</button>
+                <button onclick="showStep(1)" class="text-slate-400 text-xs hover:text-orange-main transition font-bold uppercase tracking-widest">ย้อนกลับ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Dashboard -->
+    <div id="step3" class="hidden w-full max-w-6xl fade-in py-6">
+        <div class="flex flex-col lg:flex-row gap-8 items-start">
+            
+            <!-- Information Panel -->
+            <div class="w-full lg:w-1/3 space-y-6">
+                <div class="bg-white p-8 rounded-[2.5rem] card-shadow border border-slate-100">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3">MORANASATECT Profile</p>
+                    <h2 class="text-3xl font-black text-slate-800 leading-tight" id="resName"></h2>
+                    <p class="text-orange-main font-bold text-sm mt-1 tracking-widest" id="resId"></p>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Global Link -->
+                    <a href="https://drive.google.com/drive/folders/1jpIr70v2KsbOEidIYA8lfH_iwmJgXqWG?usp=drive_link" target="_blank" 
+                        class="flex items-center justify-between p-6 bg-slate-900 rounded-[2rem] text-white shadow-xl hover:shadow-orange-200 transition-all group overflow-hidden relative">
+                        <div class="absolute inset-0 bg-orange-600 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                        <div class="flex items-center gap-5 relative z-10">
+                            <div class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-orange-400 group-hover:text-white transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-[10px] text-white/50 font-bold uppercase tracking-widest">Public Gallery</p>
+                                <p class="text-xl font-bold">รูปภาพหมู่ภาพรวม</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Personal Links -->
+                    <div id="driveLinksContainer" class="space-y-4"></div>
+                </div>
+
+                <button onclick="handleLogout()" class="w-full py-5 text-xs text-slate-400 hover:text-red-500 transition font-black uppercase tracking-[0.3em]">Logout Session</button>
+            </div>
+
+            <!-- Service History Panel -->
+            <div class="flex-1 w-full bg-white rounded-[2.5rem] card-shadow border border-slate-100 overflow-hidden">
+                <div class="p-8 border-b border-slate-50 bg-white flex justify-between items-center">
+                    <h3 class="font-black text-slate-800 tracking-tight text-lg uppercase">Service Log</h3>
+                    <div class="px-4 py-1.5 bg-orange-50 text-orange-600 rounded-full text-[10px] font-bold border border-orange-100 tracking-widest">REALTIME</div>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left whitespace-nowrap">
+                        <thead>
+                            <tr class="text-[10px] text-slate-400 uppercase tracking-[0.2em] border-b border-slate-50 bg-slate-50/30">
+                                <th class="px-8 py-5">Queue</th>
+                                <th class="px-8 py-5 text-center">Status</th>
+                                <th class="px-8 py-5">Booked Time</th>
+                                <th class="px-8 py-5 text-right">Processing</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultBody" class="text-sm text-slate-600 divide-y divide-slate-50 font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwiwh09ssDzXk_XBA_UtVq-JqsaZt6rEGh3sCmfLaHCB_GZTy0umsf9vribur54EpaW/exec"; 
+
+        const database = [
+            { q: "T-001", id: "64030135", name: "Nan", status: "เสร็จสิ้น", booked: "20/3/2569 13:29", drive: "https://drive.google.com/drive/folders/1oAdrdy8fsNMH0ZB_ijZhizVkWqt207g0", duration: "429" },
+            { q: "T-002", id: "64030163", name: "เม", status: "เสร็จสิ้น", booked: "20/3/2569 13:29", drive: "https://drive.google.com/drive/folders/1jBTLfeuL5Ns_TxtUsQOdHSSFG90-Cp2A", duration: "295" },
+            { q: "T-003", id: "64030052", name: "พริมโรส", status: "เสร็จสิ้น", booked: "20/3/2569 13:29", drive: "https://drive.google.com/drive/folders/11Hx7gZg917OVGIqVjsyR7-se4az5mFYX", duration: "206" },
+            { q: "T-004", id: "64030020", name: "ทิพย์", status: "เสร็จสิ้น", booked: "20/3/2569 13:29", drive: "https://drive.google.com/drive/folders/1u6UiAphO7niolN0f-OPNnyAifDT68yj7", duration: "458" },
+            { q: "T-005", id: "64030287", name: "เบนซ์", status: "เสร็จสิ้น", booked: "20/3/2569 13:30", drive: "https://drive.google.com/drive/folders/1dbQCuhbdTrH8NN1G2Yi9Yfo2LU3ZcQJ-", duration: "341" },
+            { q: "T-006", id: "64030179", name: "ลีวิว", status: "เสร็จสิ้น", booked: "20/3/2569 13:30", drive: "https://drive.google.com/drive/folders/1Umce-4fRuLcJH7yYF-ppYdRwW2Miz7HR", duration: "470" },
+            { q: "T-007", id: "64030325", name: "พิมพ์", status: "เสร็จสิ้น", booked: "20/3/2569 13:30", drive: "https://drive.google.com/drive/folders/1VLatEvroLUC6F85jy_NimqJl9ubJq0IP", duration: "422" },
+            { q: "T-008", id: "64030082", name: "นีน", status: "เสร็จสิ้น", booked: "20/3/2569 13:31", drive: "https://drive.google.com/drive/folders/1A1JoVIU7Qadbkks4FD1i9NqVA1N0-onU", duration: "0" },
+            { q: "T-009", id: "65030045", name: "คะนิ้ง", status: "ยกเลิก", booked: "20/3/2569 13:31", drive: "https://drive.google.com/drive/folders/1VfN8-DdHouE_k4Jb7DLvbSu-QZm8RfQ5", duration: "-" },
+            { q: "T-010", id: "65030054", name: "โชติกา อายุวรรณกร", status: "ยกเลิก", booked: "20/3/2569 13:31", drive: "https://drive.google.com/drive/folders/19369A36YDxOSpS8I0i1slVLNthmfsIF9", duration: "-" },
+            { q: "T-011", id: "65030057", name: "กัน", status: "เสร็จสิ้น", booked: "20/3/2569 13:32", drive: "https://drive.google.com/drive/folders/130v_PrrWfKLgktP34IKO-A7-b0zfdyXe", duration: "299" },
+            { q: "T-012", id: "64030078", name: "C", status: "เสร็จสิ้น", booked: "20/3/2569 13:32", drive: "https://drive.google.com/drive/folders/1qEajgBe-3U7osE79G3eoQJCIG8fA-0Y6", duration: "232" },
+            { q: "T-013", id: "64030171", name: "ปริม", status: "เสร็จสิ้น", booked: "20/3/2569 13:32", drive: "https://drive.google.com/drive/folders/15xIN2VwUqxk4mO_ykAZRmKiRl4S0mYVb", duration: "219" },
+            { q: "T-014", id: "64030159", name: "Jaoo", status: "เสร็จสิ้น", booked: "20/3/2569 13:32", drive: "https://drive.google.com/drive/folders/1pdOvhnD5qRw5mzO2TMoaekK9zATvyllI", duration: "203" },
+            { q: "T-015", id: "64030042", name: "ไบรท์", status: "เสร็จสิ้น", booked: "20/3/2569 13:32", drive: "https://drive.google.com/drive/folders/1n58RKVLOJWvMtwjBCW3TQTXjLtTHiADU", duration: "178" },
+            { q: "T-016", id: "63030127", name: "ใหม่", status: "เสร็จสิ้น", booked: "20/3/2569 13:33", drive: "https://drive.google.com/drive/folders/1GmRfeGCWho42tYSbWEUrHw-3VXRoMNSk", duration: "153" },
+            { q: "T-017", id: "64030239", name: "โอม", status: "เสร็จสิ้น", booked: "20/3/2569 13:33", drive: "https://drive.google.com/drive/folders/1DA2Q8123vGVQ47PAP4WpmjNafVRziKfF", duration: "251" },
+            { q: "T-018", id: "64030239", name: "โอม", status: "ยกเลิก", booked: "20/3/2569 13:33", drive: "https://drive.google.com/drive/folders/1kumGTitvRrd7dZIttO0AC-Xp0PsG-3t-", duration: "-" },
+            { q: "T-019", id: "65030004", name: "ฝ้าย", status: "เสร็จสิ้น", booked: "20/3/2569 14:39", drive: "https://drive.google.com/drive/folders/17_JHLEFzYjL5mibmIDwqQUjGvX-Mt5kG", duration: "1290" },
+            { q: "T-020", id: "65030282", name: "มิก", status: "เสร็จสิ้น", booked: "20/3/2569 14:40", drive: "https://drive.google.com/drive/folders/1WvE8epZCjmygGxvZ0_RwP01cIadnf4gy", duration: "193" },
+            { q: "T-021", id: "65030063", name: "กล้องฟิล์ม", status: "เสร็จสิ้น", booked: "20/3/2569 14:40", drive: "https://drive.google.com/drive/folders/1AMLIf-7u0AqffEM9ieiQL9I1V2MWn905", duration: "150" },
+            { q: "T-022", id: "65030290", name: "อัฟ", status: "เสร็จสิ้น", booked: "20/3/2569 14:43", drive: "https://drive.google.com/drive/folders/1fLRSpNUWNiDH9OTNHU3LCSVkfkAZcikZ", duration: "343" },
+            { q: "T-023", id: "65030249", name: "เบตตี้", status: "เสร็จสิ้น", booked: "20/3/2569 14:43", drive: "https://drive.google.com/drive/folders/1G8iVTNHwJ8j2vH8BWBN1xTF3IzfA3FXJ", duration: "240" },
+            { q: "T-024", id: "65030070", name: "สมหวัง", status: "เสร็จสิ้น", booked: "20/3/2569 14:44", drive: "https://drive.google.com/drive/folders/16wonUNWFc7fdgfALtM-LCRptaJgPJ523", duration: "259" },
+            { q: "T-025", id: "65030193", name: "โบ๊ท", status: "เสร็จสิ้น", booked: "20/3/2569 14:44", drive: "https://drive.google.com/drive/folders/1SXH2RO-BIkyTF_sOOJwUtXXyZtbBhiP2", duration: "216" },
+            { q: "T-026", id: "65030273", name: "เตย", status: "เสร็จสิ้น", booked: "20/3/2569 14:45", drive: "https://drive.google.com/drive/folders/1Oup2DRoDPowq-ScETBxybGuxcbC_WnMm", duration: "724" },
+            { q: "T-027", id: "65030295", name: "อ๋อม", status: "เสร็จสิ้น", booked: "20/3/2569 14:45", drive: "https://drive.google.com/drive/folders/1FKOK3h27chVETcb-qPt1a07-nT9syWrr", duration: "265" },
+            { q: "T-028", id: "65030145", name: "ปาล์มมี่", status: "เสร็จสิ้น", booked: "20/3/2569 14:46", drive: "https://drive.google.com/drive/folders/1Nd8-NCmJZudoA-r_Zf5grqdYL4ejQuP_", duration: "228" },
+            { q: "T-029", id: "65030001", name: "กี๊ฟ", status: "เสร็จสิ้น", booked: "20/3/2569 14:47", drive: "https://drive.google.com/drive/folders/14uyIYWZBOPNlkbAVad2u6RaDgmFAJD_q", duration: "162" },
+            { q: "T-030", id: "65030038", name: "ต้นข้าว", status: "เสร็จสิ้น", booked: "20/3/2569 14:48", drive: "https://drive.google.com/drive/folders/1tBiYBPifSq1Ad9W9MT3zK2xKyFqCyRJN", duration: "200" },
+            { q: "T-031", id: "65030115", name: "เฟรม", status: "เสร็จสิ้น", booked: "20/3/2569 14:49", drive: "https://drive.google.com/drive/folders/1V4HSvGtTYXNvB5nLlQWWPvfwSpPuDFsn", duration: "251" },
+            { q: "T-032", id: "65030095", name: "เพลง", status: "เสร็จสิ้น", booked: "20/3/2569 14:49", drive: "https://drive.google.com/drive/folders/1isHO_Ndo-LGzrxBM6Ogh9CKPBYKHUx_L", duration: "175" },
+            { q: "T-033", id: "65030215", name: "Dream", status: "เสร็จสิ้น", booked: "20/3/2569 14:50", drive: "https://drive.google.com/drive/folders/1rsAJN6A83wZxkunf8DFDo156OtCBFboq", duration: "1" },
+            { q: "T-034", id: "65030040", name: "TaoTao", status: "เสร็จสิ้น", booked: "20/3/2569 14:51", drive: "https://drive.google.com/drive/folders/1bPPOPCEsvXxwK-KCzKBMRySwd1v5U8X0", duration: "231" },
+            { q: "T-035", id: "65030043", name: "นน", status: "เสร็จสิ้น", booked: "20/3/2569 14:51", drive: "https://drive.google.com/drive/folders/1BbVvFdF6fWnNsro0zILDLlGm7CeFcdlt", duration: "1589" },
+            { q: "T-036", id: "65030272", name: "แทมมู่", status: "เสร็จสิ้น", booked: "20/3/2569 14:51", drive: "https://drive.google.com/drive/folders/1FD7vDhhTUDmh14__ri_a-dyc4iNazYHs", duration: "355" },
+            { q: "T-037", id: "65030234", name: "แพร์", status: "เสร็จสิ้น", booked: "20/3/2569 14:52", drive: "https://drive.google.com/drive/folders/1BtBye2b0JCo-1JcBVvMhD1rTed1BvIso", duration: "417" },
+            { q: "T-038", id: "65030173", name: "ใบเตย", status: "เสร็จสิ้น", booked: "20/3/2569 14:52", drive: "https://drive.google.com/drive/folders/1kakpdrREnCg7Ws8JNF4hBLY_qK9jlgCZ", duration: "206" },
+            { q: "T-039", id: "65030009", name: "เฟิร์น", status: "เสร็จสิ้น", booked: "20/3/2569 14:53", drive: "https://drive.google.com/drive/folders/1DqrKyeoBkkXxadlCZv0_N1dtwmDQiEoa", duration: "189" },
+            { q: "T-040", id: "65030286", name: "ฟิล์ม", status: "เสร็จสิ้น", booked: "20/3/2569 14:53", drive: "https://drive.google.com/drive/folders/1k0P218NwwDzcHhenbJA0eauMnAo5ohc4", duration: "204" },
+            { q: "T-041", id: "65030123", name: "จิ๊บ", status: "เสร็จสิ้น", booked: "20/3/2569 14:53", drive: "https://drive.google.com/drive/folders/1pcStF7fE6Xem-N7ASANj4IFvdD2_bdv7", duration: "192" },
+            { q: "T-042", id: "65030022", name: "พัด", status: "เสร็จสิ้น", booked: "20/3/2569 14:53", drive: "https://drive.google.com/drive/folders/1487WneJRazJ5P-h4wkMobq7wJp7ObLnf", duration: "319" },
+            { q: "T-043", id: "65030048", name: "มิว", status: "เสร็จสิ้น", booked: "20/3/2569 14:53", drive: "https://drive.google.com/drive/folders/131fK85Nn73Liz0CM6e8kxCbmoyh-hFnW", duration: "364" },
+            { q: "T-044", id: "65030216", name: "มิ้นท์", status: "เสร็จสิ้น", booked: "20/3/2569 14:54", drive: "https://drive.google.com/drive/folders/1FxlTV1taynj95IEeFCCDIRR-G3xwFSoC", duration: "72" },
+            { q: "T-045", id: "65030288", name: "ดาว", status: "เสร็จสิ้น", booked: "20/3/2569 14:54", drive: "https://drive.google.com/drive/folders/1L8QeTdNAffBICEKw7JoffCW1x9ZRjl11", duration: "179" },
+            { q: "T-046", id: "65030030", name: "น้ำฝวย", status: "เสร็จสิ้น", booked: "20/3/2569 14:55", drive: "https://drive.google.com/drive/folders/198oLLCOCrs6iiEjnn6yb9FIbhUAj8ijM", duration: "962" },
+            { q: "T-047", id: "65030225", name: "หมีพู", status: "เสร็จสิ้น", booked: "20/3/2569 14:56", drive: "https://drive.google.com/drive/folders/1FlwY8P-78Xpa8Xm0QERp8QwEkWm07gE3", duration: "193" },
+            { q: "T-048", id: "65030093", name: "อังเปา", status: "เสร็จสิ้น", booked: "20/3/2569 15:01", drive: "https://drive.google.com/drive/folders/1OSZQ96ZBc2eV-kdeKSzYCKGe_w8i1_OU", duration: "191" },
+            { q: "T-049", id: "65030298", name: "บอส", status: "เสร็จสิ้น", booked: "20/3/2569 15:02", drive: "https://drive.google.com/drive/folders/1S4Hg9c2vYu4t75wHV6MQZEBA4jBn8naA", duration: "195" },
+            { q: "T-050", id: "65030008", name: "วิว", status: "เสร็จสิ้น", booked: "20/3/2569 15:24", drive: "https://drive.google.com/drive/folders/108x_NbvIfTt9e_LoCaaWvHy7xJ-JJTRn", duration: "189" },
+            { q: "T-051", id: "64030135", name: "Nan", status: "ยกเลิก", booked: "20/3/2569 15:34", drive: "https://drive.google.com/drive/folders/1a2D68tBrCRMQDzC5mm7K_3xWxCjlRrwA", duration: "-" },
+            { q: "T-052", id: "65030221", name: "เมอ", status: "เสร็จสิ้น", booked: "20/3/2569 15:52", drive: "https://drive.google.com/drive/folders/1IMTwkm2uU9OOPYTPw7OM0HubljDf6Wlf", duration: "206" },
+            { q: "T-053", id: "65030070", name: "สมหวัง", status: "ยกเลิก", booked: "20/3/2569 17:25", drive: "https://drive.google.com/drive/folders/1F-Y2oEgMTIWlXN1GDItmrQJI7SKHO2Js", duration: "-" },
+            { q: "T-055", id: "65030036", name: "วันเพ็ญ", status: "เสร็จสิ้น", booked: "20/3/2569 19:46", drive: "https://drive.google.com/drive/folders/1eEvkZgsyrzmby9BO-ZpIMP-YNdZHjcxz", duration: "1" },
+            { q: "T-056", id: "65030138", name: "ปลั๊ก", status: "เสร็จสิ้น", booked: "20/3/2569 19:47", drive: "https://drive.google.com/drive/folders/1UtFBEaaRPkSMMLVvS-z4IOq7jovWoifX", duration: "0" },
+            { q: "T-057", id: "65030140", name: "ปิ่น", status: "เสร็จสิ้น", booked: "20/3/2569 19:47", drive: "https://drive.google.com/drive/folders/1dDZNkHytOBT2nYo3BBzZG4w4jKi_p6jF", duration: "2" }
+        ];
+
+        let generatedOTP = "";
+        let currentRef = "";
+        let currentUserResults = [];
+
+        window.onload = function() {
+            const savedId = localStorage.getItem('moranasatect_session');
+            if (savedId) {
+                currentUserResults = database.filter(item => item.id === savedId);
+                if (currentUserResults.length > 0) { renderDashboard(); showStep(3); } else { showStep(1); }
+            } else { showStep(1); }
+            setTimeout(() => document.getElementById('sessionLoading').classList.add('hidden'), 600);
+            setupOtpInputs();
+            setupEnterKeys();
+        };
+
+        function setupEnterKeys() {
+            document.getElementById('studentIdInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleLogin();
+            });
+        }
+
+        function setupOtpInputs() {
+            const boxes = document.querySelectorAll('.otp-box');
+            boxes.forEach((box, i) => {
+                box.oninput = (e) => {
+                    const val = e.target.value;
+                    if (!/^\d*$/.test(val)) { e.target.value = ""; return; }
+                    if (val && i < 5) boxes[i+1].focus();
+                    if (Array.from(boxes).every(b => b.value !== "")) {
+                        // All boxes filled, ready for verification
+                    }
+                };
+                box.onkeydown = (e) => { 
+                    if (e.key === 'Backspace' && !box.value && i > 0) boxes[i-1].focus();
+                    if (e.key === 'Enter') handleVerify(); // ยืนยัน OTP เมื่อกด Enter
+                };
+            });
+        }
+
+        function showStep(s) {
+            document.querySelectorAll('#step1, #step2, #step3').forEach(el => el.classList.add('hidden'));
+            document.getElementById('step'+s).classList.remove('hidden');
+            if (s === 1) {
+                document.getElementById('studentIdInput').value = "";
+                document.querySelectorAll('.otp-box').forEach(b => b.value = "");
+            }
+        }
+
+        async function handleLogin() {
+            const id = document.getElementById('studentIdInput').value.trim();
+            currentUserResults = database.filter(item => item.id === id);
+            if (currentUserResults.length === 0) { 
+                document.getElementById('error1').classList.remove('hidden'); 
+                shakeElement(document.getElementById('step1'));
+                return; 
+            }
+
+            document.getElementById('error1').classList.add('hidden');
+            generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            currentRef = Math.random().toString(36).substring(2, 6).toUpperCase();
+            
+            const btn = document.getElementById('loginBtn');
+            const load = document.getElementById('loginLoading');
+            btn.disabled = true; load.classList.remove('hidden');
+
+            try {
+                await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST', mode: 'no-cors', cache: 'no-cache',
+                    body: JSON.stringify({ 
+                        studentId: id, 
+                        otpCode: generatedOTP, 
+                        refCode: currentRef 
+                    })
+                });
+                document.getElementById('targetEmail').innerText = id + "@kmitl.ac.th";
+                document.getElementById('displayRef').innerText = currentRef;
+                showStep(2);
+                setTimeout(() => document.querySelectorAll('.otp-box')[0].focus(), 400);
+            } catch (e) { alert("เกิดข้อผิดพลาดในการส่งอีเมล กรุณาตรวจสอบการเชื่อมต่อ"); }
+            finally { btn.disabled = false; load.classList.add('hidden'); }
+        }
+
+        function handleVerify() {
+            const code = Array.from(document.querySelectorAll('.otp-box')).map(b => b.value).join('');
+            if (code === generatedOTP) {
+                localStorage.setItem('moranasatect_session', currentUserResults[0].id);
+                renderDashboard(); showStep(3);
+            } else { 
+                document.getElementById('error2').classList.remove('hidden');
+                shakeElement(document.getElementById('otpGroup'));
+            }
+        }
+
+        function shakeElement(el) {
+            el.classList.add('translate-x-1');
+            setTimeout(() => el.classList.remove('translate-x-1'), 100);
+        }
+
+        function handleLogout() { localStorage.removeItem('moranasatect_session'); showStep(1); }
+
+        function renderDashboard() {
+            const first = currentUserResults[0];
+            document.getElementById('resId').innerText = 'ID: ' + first.id;
+            document.getElementById('resName').innerText = first.name;
+            const container = document.getElementById('driveLinksContainer');
+            container.innerHTML = '';
+            
+            currentUserResults.forEach(item => {
+                if (item.status === "เสร็จสิ้น") {
+                    const a = document.createElement('a');
+                    a.href = item.drive; a.target = "_blank";
+                    a.className = "flex items-center justify-between p-6 bg-white rounded-[2rem] border border-slate-100 shadow-md hover:border-orange-200 transition-all group scale-100 active:scale-95 mb-4";
+                    a.innerHTML = `
+                        <div class="flex items-center gap-5">
+                            <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-main group-hover:bg-orange-main group-hover:text-white transition-all shadow-inner">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mb-0.5">Your Photo Link</p>
+                                <p class="text-xl font-extrabold leading-tight text-slate-800">รูปถ่ายคิว ${item.q}</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-2xl group-hover:bg-orange-main group-hover:text-white transition-colors text-slate-300">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                        </div>
+                    `;
+                    container.appendChild(a);
+                }
+            });
+
+            const tbody = document.getElementById('resultBody');
+            tbody.innerHTML = '';
+            currentUserResults.forEach(item => {
+                const tr = document.createElement('tr');
+                const isCancelled = item.status === 'ยกเลิก';
+                tr.className = "hover:bg-slate-50/80 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-8 py-6 font-bold text-slate-800">${item.q}</td>
+                    <td class="px-8 py-6 text-center">
+                        <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase ${isCancelled ? 'bg-red-50 text-red-500 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}">
+                            ${item.status}
+                        </span>
+                    </td>
+                    <td class="px-8 py-6 text-[12px] text-slate-400">${item.booked}</td>
+                    <td class="px-8 py-6 text-right font-mono font-bold text-orange-main">${item.duration}${item.duration !== '-' ? 's' : ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
