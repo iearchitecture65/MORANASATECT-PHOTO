@@ -22,7 +22,6 @@
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* OTP Boxes - Adjusted for responsiveness */
         .otp-box {
             flex: 1;
             max-width: 45px;
@@ -68,8 +67,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold tracking-tight uppercase text-slate-800 leading-none">MORANASATECT</h1>
-            <p class="text-slate-400 text-[11px] mt-2 font-medium">กรอกรหัสนักศึกษาเพื่อเข้าสู่ระบบ</p>
+            <h1 class="text-2xl font-bold tracking-tight uppercase text-slate-800">MORANASATECT</h1>
+            <p class="text-slate-400 text-[11px] mt-1 font-medium">เข้าสู่ระบบเพื่อรับรูปถ่าย</p>
 
             <div class="mt-8 space-y-4">
                 <input type="tel" id="studentIdInput" maxlength="10" placeholder="รหัสนักศึกษา" 
@@ -91,8 +90,8 @@
                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                 Email Sent Successfully
             </div>
-            <h1 class="text-xl font-black mb-1 text-slate-800 uppercase leading-none">ยืนยันรหัส OTP</h1>
-            <p class="text-slate-500 text-[11px] font-medium leading-relaxed px-2 mt-2">
+            <h1 class="text-xl font-black mb-1 text-slate-800 uppercase leading-none">ยืนยันตัวตน</h1>
+            <p class="text-slate-500 text-[10px] font-medium leading-relaxed px-2 mt-2">
                 ระบบได้ส่งรหัสยืนยันไปยังเมล <br>
                 <span class="text-slate-800 font-bold underline" id="targetEmail"></span>
             </p>
@@ -138,12 +137,15 @@
                             </div>
                             <div>
                                 <p class="text-[8px] text-white/40 font-bold uppercase tracking-[0.2em] leading-none mb-1">Public Access</p>
-                                <p class="text-sm font-extrabold leading-tight">ดาวน์โหลดรูปภาพหมู่</p>
+                                <p class="text-sm font-extrabold leading-tight text-white">ดาวน์โหลดรูปภาพหมู่</p>
                             </div>
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white/40 group-hover:text-white transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                     </a>
                     
+                    <!-- Conditional Room 65 Link -->
+                    <div id="room65Container"></div>
+
                     <!-- Personal Links Container -->
                     <div id="driveLinksContainer" class="space-y-3"></div>
                 </div>
@@ -163,7 +165,7 @@
                             <tr class="text-[8px] text-slate-400 uppercase tracking-[0.1em] border-b border-slate-50 bg-slate-50/20">
                                 <th class="px-5 py-3.5">Queue</th>
                                 <th class="px-5 py-3.5 text-center">Status</th>
-                                <th class="px-5 py-3.5">Time</th>
+                                <th class="px-5 py-3.5">Booked</th>
                                 <th class="px-5 py-3.5 text-right">Process</th>
                             </tr>
                         </thead>
@@ -268,10 +270,9 @@
                         boxes[i+1].focus();
                     }
                     
-                    // เช็คว่ากรอกครบ 6 ตัวหรือยัง
                     const currentCode = Array.from(boxes).map(b => b.value).join('');
                     if (currentCode.length === 6) {
-                        handleVerify(); // ยืนยันอัตโนมัติเมื่อครบ 6 หลัก
+                        handleVerify(); 
                     }
                 };
                 box.onkeydown = (e) => { 
@@ -331,7 +332,6 @@
             } else { 
                 document.getElementById('error2').classList.remove('hidden');
                 shakeElement(document.getElementById('otpGroup'));
-                // ล้างค่าเพื่อให้กรอกใหม่
                 setTimeout(() => {
                     document.querySelectorAll('.otp-box').forEach(b => b.value = "");
                     document.querySelectorAll('.otp-box')[0].focus();
@@ -350,6 +350,30 @@
             const first = currentUserResults[0];
             document.getElementById('resId').innerText = 'STUDENT ID: ' + first.id;
             document.getElementById('resName').innerText = first.name;
+            
+            // Render Group 65 Link if applicable
+            const room65Container = document.getElementById('room65Container');
+            room65Container.innerHTML = '';
+            if (first.id.startsWith('65')) {
+                const room65Link = document.createElement('a');
+                room65Link.href = "https://drive.google.com/drive/folders/1-1FKtBJzt82929zcPcD07QEfy0YSn3p_?usp=sharing";
+                room65Link.target = "_blank";
+                room65Link.className = "flex items-center justify-between p-4 bg-orange-main rounded-[1.5rem] text-white shadow-lg hover:bg-orange-hover transition-all group active:scale-[0.99]";
+                room65Link.innerHTML = `
+                    <div class="flex items-center gap-4 text-left">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-[8px] text-white/40 font-bold uppercase tracking-[0.2em] leading-none mb-1">Room 65 Only</p>
+                            <p class="text-sm font-extrabold leading-tight text-white">ดาวน์โหลดรูปภาพหมู่ (รหัส 65)</p>
+                        </div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white/40 group-hover:text-white transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                `;
+                room65Container.appendChild(room65Link);
+            }
+
             const container = document.getElementById('driveLinksContainer');
             container.innerHTML = '';
             
@@ -359,13 +383,13 @@
                     a.href = item.drive; a.target = "_blank";
                     a.className = "btn-action flex items-center justify-between p-4 bg-orange-main rounded-2xl text-white shadow-md transition-all group active:scale-95 mb-3";
                     a.innerHTML = `
-                        <div class="flex items-center gap-4 text-left">
-                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white backdrop-blur-sm">
+                        <div class="flex items-center gap-3 sm:gap-4 text-left">
+                            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-xl flex items-center justify-center text-white backdrop-blur-sm">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                             </div>
                             <div>
                                 <p class="text-[8px] sm:text-[9px] text-white/60 font-bold uppercase tracking-[0.2em] leading-none mb-1">Personal Access</p>
-                                <p class="text-sm sm:text-base font-extrabold leading-tight tracking-tight">ดาวน์โหลดรูปถ่ายคิว ${item.q}</p>
+                                <p class="text-sm sm:text-base font-extrabold leading-tight tracking-tight">ดาวน์โหลดรูปคิว ${item.q}</p>
                             </div>
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-white/50 group-hover:text-white transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
